@@ -35,6 +35,11 @@ jobs:
     - name: Restore
       run: dotnet restore
 
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v3
+      with:
+        languages: csharp
+
     # 🔹 REQUIRED STEP
     - name: Build
       run: dotnet build --no-restore
@@ -42,10 +47,7 @@ jobs:
     # --------------------------------------------------
     # CODEQL (C#)
     # --------------------------------------------------
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3
-      with:
-        languages: csharp
+
 
     - name: Run CodeQL Analysis
       uses: github/codeql-action/analyze@v3
