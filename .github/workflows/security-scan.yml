@@ -32,6 +32,17 @@ jobs:
       with:
         dotnet-version: '8.0.x'
 
+    - name: Install SonarScanner
+      run: dotnet tool install --global dotnet-sonarscanner
+
+    - name: Sonar Begin
+      run: |
+        dotnet-sonarscanner begin \
+          /k:"ecognity" \
+          /o:"Ecognity" \
+          /d:sonar.login="${{ secrets.SONAR_TOKEN }}" \
+          /d:sonar.host.url="https://sonarcloud.io"
+
     # 🔹 REQUIRED STEP
     - name: Restore
       run: dotnet restore
@@ -73,6 +84,12 @@ jobs:
 
     - name: Run CodeQL Analysis
       uses: github/codeql-action/analyze@v3
+
+    # ----------------------------------
+    # SONAR END
+    # ----------------------------------
+    - name: Sonar End
+      run: dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}" 
 
     # --------------------------------------------------
     # TRIVY – Filesystem Scan (SARIF)
