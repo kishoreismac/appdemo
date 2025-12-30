@@ -107,18 +107,18 @@ jobs:
     # --------------------------------------------------
     # SBOM (CycloneDX)
     # --------------------------------------------------
-    # - name: Restore
-    #   run: dotnet restore
+    - name: Restore
+      run: dotnet restore
 
-    # - name: Generate SBOM
-    #   uses: CycloneDX/gh-dotnet@v1
-    #   with:
-    #     path: .
-    #     format: json
-    #     output: sbom
+    - name: Generate SBOM
+      uses: CycloneDX/gh-dotnet@v1
+      with:
+        path: .
+        format: json
+        output: sbom
 
-    # - name: Upload SBOM
-    #   uses: actions/upload-artifact@v4
-    #   with:
-    #     name: sbom
-    #     path: sbom/bom.json
+    - name: Upload SBOM
+      uses: actions/upload-artifact@v4
+      with:
+        name: sbom
+        path: sbom/bom.json
