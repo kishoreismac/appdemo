@@ -323,7 +323,7 @@ jobs:
         target: https://${{ vars.WEBAPP_NAME_DEV }}.azurewebsites.net
         cmd_options: "-a"
         fail_action: false
-        artifact_name: zap-scan
+        artifact_name: zapscansecurityresults
         allow_issue_writing: false
         token: ${{ github.token }}
 
