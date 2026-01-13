@@ -304,10 +304,10 @@ jobs:
     # -------------------------------
     # DAST Security Testing
     # -------------------------------
-    - name: Create ZAP working directory
-      run: |
-        mkdir -p ${{ github.workspace }}/zap-reports
-        chmod 777 ${{ github.workspace }}/zap-reports
+    # - name: Create ZAP working directory
+    #   run: |
+    #     mkdir -p ${{ github.workspace }}/zap-reports
+    #     chmod 777 ${{ github.workspace }}/zap-reports
 
     # - name: OWASP ZAP Baseline Scan
     #   uses: zaproxy/action-baseline@v0.10.0
@@ -323,9 +323,9 @@ jobs:
         target: https://${{ vars.WEBAPP_NAME_DEV }}.azurewebsites.net
         cmd_options: "-a"
         fail_action: false
-        artifact_name: zapscansecurityresults
-        allow_issue_writing: false
-        token: ${{ github.token }}
+        # artifact_name: zapscansecurityresults
+        # allow_issue_writing: false
+        # token: ${{ github.token }}
 
 
     # -------------------------------
@@ -333,11 +333,12 @@ jobs:
     # -------------------------------
     - name: Enforce DAST Thresholds
       run: |
-        if grep -q "High" zap-report.html || grep -q "Critical" zap-report.html; then
+        if grep -q "High" report_html.html || grep -q "Critical" report_html.html; then
           echo "❌ High or Critical vulnerabilities detected"
           exit 1
         fi
         echo "✅ DAST security thresholds passed"
+        
 
     # -------------------------------
     # Collect Results
