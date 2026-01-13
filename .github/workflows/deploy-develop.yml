@@ -1,3 +1,161 @@
+# name: Deploy to Dev & Test
+
+# on:
+#   pull_request:
+#     branches:
+#       - develop
+#   push:
+#     branches:
+#       - develop
+
+# permissions:
+#   contents: read
+#   actions: read
+#   checks: write
+#   id-token: write
+
+# jobs:
+#   build-and-test:
+#     name: Build and Test
+#     runs-on: ubuntu-latest
+
+#     steps:
+#     # --------------------------------------------------
+#     # Checkout
+#     # --------------------------------------------------
+#     - name: Checkout code
+#       uses: actions/checkout@v4
+
+#     - name: Setup .NET
+#       uses: actions/setup-dotnet@v4
+#       with:
+#         dotnet-version: '8.0.x'
+
+#     - name: Restore
+#       run: dotnet restore
+
+#     # --------------------------------------------------
+#     # Build & Test
+#     # --------------------------------------------------
+#     - name: Build
+#       run: dotnet build --no-restore --configuration Release
+
+#     - name: Run Unit Tests
+#       run: |
+#         dotnet test \
+#           --configuration Release \
+#           --logger "trx" \
+#           --results-directory TestResults \
+#           --no-build
+
+#     - name: Publish Test Results
+#       if: always()
+#       uses: dorny/test-reporter@v1
+#       with:
+#         name: Unit Tests
+#         path: TestResults/*.trx
+#         reporter: dotnet-trx
+
+#     - name: Run Tests with Coverage
+#       run: |
+#         dotnet test \
+#           --collect:"XPlat Code Coverage" \
+#           --results-directory TestResults \
+#           --configuration Release
+
+#     - name: Upload Coverage
+#       uses: actions/upload-artifact@v4
+#       with:
+#         name: coverage
+#         path: TestResults/**/coverage.cobertura.xml
+
+#     - name: Publish Coverage Summary
+#       uses: irongut/CodeCoverageSummary@v1.3.0
+#       with:
+#         filename: TestResults/**/coverage.cobertura.xml
+#         badge: true
+#         format: markdown
+#         output: both
+
+#     # --------------------------------------------------
+#     # Publish Artifact (only on push to develop)
+#     # --------------------------------------------------
+#     - name: Publish Application
+#       if: github.event_name == 'push'
+#       run: dotnet publish src/HelloWorldApi/HelloWorldApi.csproj --configuration Release --output ./publish
+
+#     - name: Upload Artifact
+#       if: github.event_name == 'push'
+#       uses: actions/upload-artifact@v4
+#       with:
+#         name: webapp-artifact
+#         path: ./publish
+
+#   # --------------------------------------------------
+#   # Deploy to DEV Environment
+#   # --------------------------------------------------
+#   deploy-dev:
+#     name: Deploy to DEV
+#     runs-on: ubuntu-latest
+#     needs: build-and-test
+#     if: github.event_name == 'push'
+#     environment:
+#       name: dev
+#       url: https://${{ vars.WEBAPP_NAME_DEV }}.azurewebsites.net
+
+#     steps:
+#     - name: Download Artifact
+#       uses: actions/download-artifact@v4
+#       with:
+#         name: webapp-artifact
+#         path: ./publish
+
+#     - name: Azure Login
+#       uses: azure/login@v2
+#       with:
+#         client-id: ${{ secrets.CLIENT_ID }}
+#         tenant-id: ${{ secrets.TENENT_ID }}
+#         subscription-id: ${{ secrets.SUBSCRIPTION_ID }}
+
+#     - name: Deploy to Azure Web App (DEV)
+#       uses: azure/webapps-deploy@v3
+#       with:
+#         app-name: ${{ secrets.WEBAPP_NAME_DEV }}
+#         package: ./publish
+
+#   # --------------------------------------------------
+#   # Deploy to TEST Environment
+#   # --------------------------------------------------
+#   deploy-test:
+#     name: Deploy to TEST
+#     runs-on: ubuntu-latest
+#     needs: deploy-dev
+#     if: github.event_name == 'push'
+#     environment:
+#       name: test
+#       url: https://${{ vars.WEBAPP_NAME_TEST }}.azurewebsites.net
+
+#     steps:
+#     - name: Download Artifact
+#       uses: actions/download-artifact@v4
+#       with:
+#         name: webapp-artifact
+#         path: ./publish
+
+#     - name: Azure Login
+#       uses: azure/login@v2
+#       with:
+#         client-id: ${{ secrets.CLIENT_ID }}
+#         tenant-id: ${{ secrets.TENENT_ID }}
+#         subscription-id: ${{ secrets.SUBSCRIPTION_ID }}
+
+#     - name: Deploy to Azure Web App (TEST)
+#       uses: azure/webapps-deploy@v3
+#       with:
+#         app-name: ${{ secrets.WEBAPP_NAME_TEST }}
+#         package: ./publish
+
+
 name: Deploy to Dev & Test
 
 on:
@@ -12,17 +170,17 @@ permissions:
   contents: read
   actions: read
   checks: write
-  id-token: write
+  id-token: write   # REQUIRED for Azure OIDC
 
+# ==================================================
+# BUILD + UNIT TEST + ARTIFACT
+# ==================================================
 jobs:
   build-and-test:
-    name: Build and Test
+    name: Build and Unit Test
     runs-on: ubuntu-latest
 
     steps:
-    # --------------------------------------------------
-    # Checkout
-    # --------------------------------------------------
     - name: Checkout code
       uses: actions/checkout@v4
 
@@ -34,9 +192,6 @@ jobs:
     - name: Restore
       run: dotnet restore
 
-    # --------------------------------------------------
-    # Build & Test
-    # --------------------------------------------------
     - name: Build
       run: dotnet build --no-restore --configuration Release
 
@@ -48,7 +203,7 @@ jobs:
           --results-directory TestResults \
           --no-build
 
-    - name: Publish Test Results
+    - name: Publish Unit Test Results
       if: always()
       uses: dorny/test-reporter@v1
       with:
@@ -69,36 +224,29 @@ jobs:
         name: coverage
         path: TestResults/**/coverage.cobertura.xml
 
-    - name: Publish Coverage Summary
-      uses: irongut/CodeCoverageSummary@v1.3.0
-      with:
-        filename: TestResults/**/coverage.cobertura.xml
-        badge: true
-        format: markdown
-        output: both
-
-    # --------------------------------------------------
-    # Publish Artifact (only on push to develop)
-    # --------------------------------------------------
     - name: Publish Application
       if: github.event_name == 'push'
-      run: dotnet publish src/HelloWorldApi/HelloWorldApi.csproj --configuration Release --output ./publish
+      run: |
+        dotnet publish src/HelloWorldApi/HelloWorldApi.csproj \
+          --configuration Release \
+          --output ./publish
 
-    - name: Upload Artifact
+    - name: Upload Application Artifact
       if: github.event_name == 'push'
       uses: actions/upload-artifact@v4
       with:
         name: webapp-artifact
         path: ./publish
 
-  # --------------------------------------------------
-  # Deploy to DEV Environment
-  # --------------------------------------------------
+# ==================================================
+# DEPLOY TO DEV + INTEGRATION + DAST + SECURITY GATE
+# ==================================================
   deploy-dev:
     name: Deploy to DEV
     runs-on: ubuntu-latest
     needs: build-and-test
     if: github.event_name == 'push'
+
     environment:
       name: dev
       url: https://${{ vars.WEBAPP_NAME_DEV }}.azurewebsites.net
@@ -110,7 +258,7 @@ jobs:
         name: webapp-artifact
         path: ./publish
 
-    - name: Azure Login
+    - name: Azure Login via OIDC
       uses: azure/login@v2
       with:
         client-id: ${{ secrets.CLIENT_ID }}
@@ -123,14 +271,67 @@ jobs:
         app-name: ${{ secrets.WEBAPP_NAME_DEV }}
         package: ./publish
 
-  # --------------------------------------------------
-  # Deploy to TEST Environment
-  # --------------------------------------------------
+    # -------------------------------
+    # Integration Tests
+    # -------------------------------
+    - name: Run Integration Tests
+      run: |
+        dotnet test tests/HelloWorldApi.IntegrationTests \
+          --configuration Release \
+          --logger "trx" \
+          --results-directory IntegrationTestResults
+
+    - name: Publish Integration Test Results
+      if: always()
+      uses: dorny/test-reporter@v1
+      with:
+        name: Integration Tests
+        path: IntegrationTestResults/*.trx
+        reporter: dotnet-trx
+
+    # -------------------------------
+    # DAST Security Testing
+    # -------------------------------
+    - name: OWASP ZAP Baseline Scan
+      uses: zaproxy/action-baseline@v0.10.0
+      with:
+        target: https://${{ vars.WEBAPP_NAME_DEV }}.azurewebsites.net
+        cmd_options: "-a"
+        fail_action: false
+
+    # -------------------------------
+    # Security Threshold Enforcement
+    # -------------------------------
+    - name: Enforce DAST Thresholds
+      run: |
+        if grep -q "High" zap-report.html || grep -q "Critical" zap-report.html; then
+          echo "❌ High or Critical vulnerabilities detected"
+          exit 1
+        fi
+        echo "✅ DAST security thresholds passed"
+
+    # -------------------------------
+    # Collect Results
+    # -------------------------------
+    - name: Upload Deployment & Security Results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: dev-deployment-results
+        path: |
+          TestResults/**
+          IntegrationTestResults/**
+          zap-report.html
+
+# ==================================================
+# DEPLOY TO TEST (PROMOTION GATE)
+# ==================================================
   deploy-test:
     name: Deploy to TEST
     runs-on: ubuntu-latest
     needs: deploy-dev
     if: github.event_name == 'push'
+
     environment:
       name: test
       url: https://${{ vars.WEBAPP_NAME_TEST }}.azurewebsites.net
@@ -142,7 +343,7 @@ jobs:
         name: webapp-artifact
         path: ./publish
 
-    - name: Azure Login
+    - name: Azure Login via OIDC
       uses: azure/login@v2
       with:
         client-id: ${{ secrets.CLIENT_ID }}
