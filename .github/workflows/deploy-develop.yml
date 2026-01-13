@@ -171,6 +171,7 @@ permissions:
   actions: read
   checks: write
   id-token: write   # REQUIRED for Azure OIDC
+  security-events: write
 
 # ==================================================
 # BUILD + UNIT TEST + ARTIFACT
