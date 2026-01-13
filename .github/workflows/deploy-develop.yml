@@ -304,12 +304,18 @@ jobs:
     # -------------------------------
     # DAST Security Testing
     # -------------------------------
+    - name: Create ZAP working directory
+      run: |
+        mkdir -p ${{ github.workspace }}/zap-reports
+        chmod 777 ${{ github.workspace }}/zap-reports
+
     - name: OWASP ZAP Baseline Scan
       uses: zaproxy/action-baseline@v0.10.0
       with:
         target: https://${{ vars.WEBAPP_NAME_DEV }}.azurewebsites.net
         cmd_options: "-a"
         fail_action: false
+        allow_issue_writing: false
 
     # -------------------------------
     # Security Threshold Enforcement
