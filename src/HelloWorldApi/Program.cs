@@ -96,6 +96,28 @@ app.MapGet("/", () => Results.Ok(new
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
 // -----------------------------
+// WEATHER FORECAST ENDPOINT
+// -----------------------------
+app.MapGet("/weatherforecast", () =>
+{
+    var summaries = new[]
+    {
+        "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
+    };
+
+    var forecast = Enumerable.Range(1, 5).Select(index =>
+        new WeatherForecast(
+            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
+            Random.Shared.Next(-20, 55),
+            summaries[Random.Shared.Next(summaries.Length)]
+        ))
+        .ToArray();
+    return forecast;
+})
+.WithName("GetWeatherForecast")
+.WithOpenApi();
+
+// -----------------------------
 // SECRET EXPOSURE (DEMO)
 // -----------------------------
 app.MapGet("/secret-demo", (IConfiguration config) =>
@@ -141,3 +163,8 @@ app.Run();
 
 // Make Program class accessible for integration tests
 public partial class Program { }
+
+record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+{
+    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+}
