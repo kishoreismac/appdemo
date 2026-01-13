@@ -316,6 +316,7 @@ jobs:
         cmd_options: "-a"
         fail_action: false
         allow_issue_writing: false
+        artifact_name: ""  # Disable automatic artifact upload
 
     # -------------------------------
     # Security Threshold Enforcement
@@ -331,6 +332,17 @@ jobs:
     # -------------------------------
     # Collect Results
     # -------------------------------
+    - name: Upload ZAP Report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: zap-scan-results
+        path: |
+          zap-report.html
+          report_*.html
+          report_*.md
+          report_*.json
+
     - name: Upload Deployment & Security Results
       if: always()
       uses: actions/upload-artifact@v4
@@ -339,7 +351,6 @@ jobs:
         path: |
           TestResults/**
           IntegrationTestResults/**
-          zap-report.html
 
 # ==================================================
 # DEPLOY TO TEST (PROMOTION GATE)
