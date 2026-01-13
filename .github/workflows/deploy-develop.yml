@@ -172,6 +172,7 @@ permissions:
   checks: write
   id-token: write   # REQUIRED for Azure OIDC
   security-events: write
+  issues: write     # REQUIRED for ZAP to create issues
 
 # ==================================================
 # BUILD + UNIT TEST + ARTIFACT
@@ -324,9 +325,8 @@ jobs:
         cmd_options: "-a"
         fail_action: false
         issue_title: false
-        # artifact_name: zapscansecurityresults
-        # allow_issue_writing: false
-        # token: ${{ github.token }}
+        allow_issue_writing: false
+        token: ""
 
 
     # -------------------------------
