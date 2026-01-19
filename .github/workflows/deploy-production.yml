@@ -179,7 +179,7 @@ jobs:
     needs: build-and-test
     environment:
       name: staging
-      url: https://${{ secrets.AZURE_WEBAPP_NAME_PROD }}-staging.azurewebsites.net
+      url: https://${{ vars.AZURE_WEBAPP_NAME_PROD }}-staging.azurewebsites.net
 
     steps:
     - name: Download Artifact
@@ -198,7 +198,7 @@ jobs:
     - name: Deploy to Azure Web App Staging Slot
       uses: azure/webapps-deploy@v3
       with:
-        app-name: ${{ secrets.AZURE_WEBAPP_NAME_PROD }}
+        app-name: ${{ vars.AZURE_WEBAPP_NAME_PROD }}
         slot-name: staging
         package: ./publish
 
@@ -211,7 +211,7 @@ jobs:
     needs: deploy-staging
     environment:
       name: production
-      url: https://${{ secrets.AZURE_WEBAPP_NAME_PROD }}.azurewebsites.net
+      url: https://${{ vars.AZURE_WEBAPP_NAME_PROD }}.azurewebsites.net
 
     steps:
     - name: Azure Login
@@ -224,7 +224,7 @@ jobs:
     - name: Swap Staging Slot to Production
       run: |
         az webapp deployment slot swap \
-          --name ${{ secrets.AZURE_WEBAPP_NAME_PROD }} \
-          --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+          --name ${{ vars.AZURE_WEBAPP_NAME_PROD }} \
+          --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
           --slot staging \
           --target-slot production
