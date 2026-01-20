@@ -229,7 +229,7 @@ jobs:
     - name: Publish Application
       if: github.event_name == 'push'
       run: |
-        dotnet publish src/HelloWorldApi/HelloWorldApi.csproj \
+        dotnet publish Calculator/Calculator.csproj \
           --configuration Release \
           --output ./publish
 
@@ -285,11 +285,11 @@ jobs:
         dotnet-version: '8.0.x'
 
     - name: Restore Integration Tests
-      run: dotnet restore tests/HelloWorldApi.IntegrationTests/HelloWorldApi.IntegrationTests.csproj
+      run: dotnet restore Calculator.IntegrationTests/Calculator.IntegrationTests.csproj
 
     - name: Run Integration Tests
       run: |
-        dotnet test tests/HelloWorldApi.IntegrationTests/HelloWorldApi.IntegrationTests.csproj \
+        dotnet test Calculator.IntegrationTests/Calculator.IntegrationTests.csproj \
           --configuration Release \
           --logger "trx" \
           --results-directory IntegrationTestResults
