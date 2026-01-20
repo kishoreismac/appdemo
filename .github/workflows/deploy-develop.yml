@@ -250,7 +250,7 @@ jobs:
     if: github.event_name == 'push'
 
     environment:
-      name: dev
+      name: DEV
       url: https://${{ vars.WEBAPP_NAME_DEV }}.azurewebsites.net
 
     steps:
@@ -388,7 +388,7 @@ jobs:
     if: github.event_name == 'push'
 
     environment:
-      name: test
+      name: TEST
       url: https://${{ vars.WEBAPP_NAME_TEST }}.azurewebsites.net
 
     steps:
