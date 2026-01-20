@@ -270,7 +270,7 @@ jobs:
     - name: Deploy to Azure Web App (DEV)
       uses: azure/webapps-deploy@v3
       with:
-        app-name: ${{ secrets.WEBAPP_NAME_DEV }}
+        app-name: ${{ vars.WEBAPP_NAME_DEV }}
         package: ./publish
 
     # -------------------------------
@@ -408,5 +408,5 @@ jobs:
     - name: Deploy to Azure Web App (TEST)
       uses: azure/webapps-deploy@v3
       with:
-        app-name: ${{ secrets.WEBAPP_NAME_TEST }}
+        app-name: ${{ vars.WEBAPP_NAME_TEST }}
         package: ./publish
