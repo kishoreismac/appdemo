@@ -70,8 +70,8 @@ jobs:
     - name: Sonar Begin
       run: |
         dotnet-sonarscanner begin \
-          /k:"Ecognity_appdemo" \
-          /o:"ecognity" \
+          /k:"kishoreismac_appdemo" \
+          /o:"kishoreismac" \
           /d:sonar.login="${{ secrets.SONAR_TOKEN }}" \
           /d:sonar.cs.vstest.reportsPaths=TestResults/*.trx \
           /d:sonar.cs.opencover.reportsPaths=TestResults/**/coverage.cobertura.xml \
